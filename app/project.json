@@ -67,6 +67,27 @@
     "unknown_seconds": "未定 s",
     "line": "原始行",
     "_line": "原始行",
-    "detail": "原因"
+    "detail": "原因",
+    "event_key": "事件键",
+    "segment_count": "片段数",
+    "baseline_method": "基线口径",
+    "positive_loss_kwh": "正向损失 kWh",
+    "negative_deviation_kwh": "负向偏差 kWh",
+    "signed_deviation_kwh": "净偏差 kWh",
+    "net_settlement_kwh": "净结算 kWh",
+    "unoffset_surplus_kwh": "未冲抵超发 kWh",
+    "settled_events": "已结算事件",
+    "pending_events": "未定事件",
+    "deviation_kwh": "偏差 kWh",
+    "surplus_kwh": "超发 kWh",
+    "source_kind": "偏差来源",
+    "finalization_id": "定稿号",
+    "version": "定稿版本",
+    "finalization_status": "定稿状态",
+    "supersedes": "替换定稿号",
+    "created_at": "定稿时刻",
+    "source_run": "来源批次",
+    "rule_version": "规则版本",
+    "negative_kwh": "负向偏差 kWh"
   }
 }

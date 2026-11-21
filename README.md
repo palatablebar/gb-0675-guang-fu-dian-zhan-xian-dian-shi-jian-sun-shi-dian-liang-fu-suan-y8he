@@ -13,7 +13,9 @@ docker compose exec -T app pytest -q
 
 各模块页面对应 `/<模块英文名>`，各模块执行入口为 `POST /api/<模块英文名>`，不传参即可独立演示。完整运行 `POST /api/runs` 支持 `dataset`（dirty/clean/legacy）、`csv_text` 与 `overrides` 参数。批次历史 `GET /api/runs`，详情 `GET /api/runs/{run_id}`。
 
-同输入与规则版本生成相同批号，只保留一条批次。复核入口 `POST /api/runs/{run_id}/review` 提交当前 `revision`，陈旧提交409。归档包只有一个下载入口 `GET /api/export/{run_id}`，含证据和运行摘要。原始隔离在页面同屏显示。
+同输入与规则版本生成相同批号，只保留一条批次。复核入口 `POST /api/runs/{run_id}/review` 提交当前 `revision`，陈旧提交409。归档包只有一个下载入口 `GET /api/export/{run_id}`，含证据、事件定稿与运行摘要。原始隔离在页面同屏显示。
+
+事件净结算：同一限电事件内前段超发、后段欠发时，片段各自保留正向损失与负向偏差，事件级只在本事件内冲抵，净结算不低于0，超发余额列未冲抵超发、不跨事件结转。含未定片段的事件整段不定稿，避免冲抵后少算受限时段。定稿入口 `POST /api/runs/{run_id}/finalize`（整批）与 `POST /api/finalizations`（单个事件，传 `run_id` 与 `event_key`），历史 `GET /api/finalizations?event_key=`。同一事件同一结果重复提交只复用最新定稿；结果变化叠加版本并保留旧版为“已替换”；事件转未定或切换失败时不写入也不删除既有定稿。对账页与归档页列出偏差来源、事件净结算和定稿版本。
 
 SQLite使用命名卷，容器重启后保留历史。要重建演示可在Compose中改用新的卷名称，保留旧卷。
 

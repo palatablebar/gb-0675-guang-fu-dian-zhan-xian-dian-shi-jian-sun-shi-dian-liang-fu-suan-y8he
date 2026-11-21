@@ -1,4 +1,5 @@
 from app.coerce import instant
+from app.events import event_key
 from datetime import timedelta
 from collections import defaultdict
 
@@ -25,11 +26,11 @@ def slice_intervals(records,context):
                 at=instant(row['at']);expires=at+timedelta(seconds=cadence)
                 if start<at<end:boundaries.add(at)
                 if start<expires<end:boundaries.add(expires)
-            ordered=sorted(boundaries);unions.append({'device':device,'start':start.isoformat(),'end':end.isoformat(),'seconds':int((end-start).total_seconds()),'event_ids':merged['event_ids']})
+            ordered=sorted(boundaries);key=event_key(device,start.isoformat(),end.isoformat());unions.append({'event_key':key,'device':device,'start':start.isoformat(),'end':end.isoformat(),'seconds':int((end-start).total_seconds()),'event_ids':merged['event_ids']})
             for a,b in zip(ordered,ordered[1:]):
                 available=[r for r in readings if instant(r['at'])<=a<instant(r['at'])+timedelta(seconds=cadence)]
                 row=available[-1] if available else None
-                segments.append({'device':device,'start':a.isoformat(),'end':b.isoformat(),'seconds':int((b-a).total_seconds()),'sample_id':row['id'] if row else '', 'sample_at':row['at'] if row else '', 'actual_kw':row['power_kw'] if row else None,'irradiance':row['irradiance'] if row else None,'status':row['status'] if row else '缺测','zone':context['devices'][device]['zone'],'event_ids':merged['event_ids']})
+                segments.append({'event_key':key,'device':device,'start':a.isoformat(),'end':b.isoformat(),'seconds':int((b-a).total_seconds()),'sample_id':row['id'] if row else '', 'sample_at':row['at'] if row else '', 'actual_kw':row['power_kw'] if row else None,'irradiance':row['irradiance'] if row else None,'status':row['status'] if row else '缺测','zone':context['devices'][device]['zone'],'event_ids':merged['event_ids']})
     return segments,unions
 
 def apply(state):

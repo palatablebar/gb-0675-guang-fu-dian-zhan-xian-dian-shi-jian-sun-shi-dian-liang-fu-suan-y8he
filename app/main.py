@@ -39,6 +39,22 @@ def runs():
 @app.get('/api/runs/{run_id}')
 def run(run_id:str):
     return store.get(DB_PATH,run_id)
+@app.post('/api/runs/{run_id}/finalize')
+def finalize_run(run_id:str):
+    result=store.get(DB_PATH,run_id)
+    return store.finalize(DB_PATH,run_id,result.get('event_settlements',[]))
+@app.post('/api/finalizations')
+def finalize_event(payload:dict=Body(...)):
+    run_id=payload.get('run_id')
+    event_key=payload.get('event_key')
+    if not run_id or not event_key:raise BusinessError('BAD_FINALIZATION','须提供 run_id 与 event_key')
+    result=store.get(DB_PATH,run_id)
+    matched=[s for s in result.get('event_settlements',[]) if s['event_key']==event_key]
+    if not matched:raise BusinessError('EVENT_NOT_FOUND','该批次不包含此事件',404)
+    return store.finalize(DB_PATH,run_id,matched)
+@app.get('/api/finalizations')
+def finalization_history(event_key:str|None=None):
+    return store.finalizations(DB_PATH,event_key)
 @app.post('/api/runs/{run_id}/review')
 def review(run_id:str,payload:dict=Body(...)):
     revision=payload.get('revision')

@@ -29,10 +29,17 @@
 | TRAP-06 | 全角千分位 | 静默错算或证据丢失 | 以可复核规则显式处理 | `app/modules/devices/rules.py` | `tests/test_devices.py::test_fullwidth_number` |
 | TRAP-11 | UTC归一 | 静默错算或证据丢失 | 以可复核规则显式处理 | `app/modules/devices/rules.py` | `tests/test_devices.py::test_time_equivalence` |
 | TRAP-23 | 限电区间并集 | 静默错算或证据丢失 | 以可复核规则显式处理 | `app/modules/slicing/rules.py` | `tests/test_slicing.py::test_overlapping_real` |
+| TRAP-31 | 事件内前段超发后段欠发 | 超发抹成0，或按净差少算受限时段 | 正负偏差分列，仅同事件冲抵且净结算不低于0；含未定片段整段不定稿 | `app/settlement.py` | `tests/test_settlement.py::test_negative_deviation_offsets_same_event` |
+| TRAP-32 | 重试定稿 | 重复生成多条定稿 | 事件键+结果摘要去重，结果变化叠加版本并保留旧版 | `app/store.py` | `tests/test_settlement.py::test_finalize_is_idempotent` |
+| TRAP-33 | 切换样例失败 | 抹掉已确认定稿 | 未定事件不写入不删除，旧版保留 | `app/store.py` | `tests/test_settlement.py::test_failed_switch_keeps_finalizations` |
+
+## 定稿口径
+
+事件键=设备+并集UTC起止epoch秒。事件净结算：净偏差=正向损失−负向偏差，净结算=max(净偏差,0)，余额列未冲抵超发；负向偏差只冲抵同事件正向损失，不跨事件结转。定稿须闭合 基线−实际=净结算−未冲抵超发 与 正向损失−负向偏差=净偏差；含未定片段的整段事件不定稿。`POST /api/runs/{run_id}/finalize`、`POST /api/finalizations`、`GET /api/finalizations?event_key=` 与对账/归档页同步展示。
 
 ## 对账规则
 
-原始逻辑输入=采纳行+隔离行+空行+重复表头+同值重复。业务计算按 DATA-DICTIONARY.md 分别核验，不能把上级与下级重复加总。所有隔离保留编号、原值、原始行号和稳定原因码。
+原始逻辑输入=采纳行+隔离行+空行+重复表头+同值重复。业务计算按 DATA-DICTIONARY.md 分别核验，不能把上级与下级重复加总。能量对账按 基线−实际=正向损失−负向偏差 与 事件级 基线−实际=净结算−未冲抵超发 两式核验，超发不得静默清零。所有隔离保留编号、原值、原始行号和稳定原因码。
 
 ## 已知不覆盖
 
